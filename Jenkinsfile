@@ -22,8 +22,8 @@ pipeline {
     }
 
     environment {
-        ISOLATION_ID = sh(returnStdout: true, script: 'printf $BUILD_TAG | sha256sum | cut -c1-64').trim()
-        JENKINS_UID = sh(returnStdout: true, script: "id -u ${USER}").trim()
+        ISOLATION_ID = 'latest'
+        JENKINS_UID ='ram'
     }
 
     stages {
@@ -51,22 +51,6 @@ pipeline {
             }
         }
 
-        stage('Run CFT tests') {
-            options {
-                timeout(time: 10, unit: 'MINUTES')
-            }
-            steps {
-                sh 'tests/test_crash_fault_tolerance.sh'
-            }
-            post {
-                always {
-                    // The CFT tests use the local target/ directory to build and share the PBFT binary between
-                    // containers, and that results in writing files to that local directory as root, which gives
-                    // permission denied errors on a second run unless we fix the permissions here.
-                    sh 'docker run --rm -v $(pwd)/target:/target sawtooth-pbft-engine-local:${ISOLATION_ID} bash -c "chown -R ${JENKINS_UID} /target"'
-                }
-            }
-        }
 
         stage("Archive Build artifacts") {
             steps {
