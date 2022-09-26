@@ -16,20 +16,9 @@
  */
 
 pipeline {
-    agent {
-        node {
-            label 'master'
-            customWorkspace "workspace/${env.BUILD_TAG}"
-        }
-    }
-
-    triggers {
-        cron(env.BRANCH_NAME == 'main' ? 'H 3 * * *' : '')
-    }
-
+ agent any
     options {
         timestamps()
-        buildDiscarder(logRotator(daysToKeepStr: '31'))
     }
 
     environment {
