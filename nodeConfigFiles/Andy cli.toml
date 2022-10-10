@@ -1,5 +1,5 @@
-# Copyright 2018 Intel Corporation
-# Copyright 2018 Cargill Corporation
+#
+# Copyright 2017 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,20 +14,9 @@
 # limitations under the License.
 # ------------------------------------------------------------------------------
 
-version: "2.1"
+#
+# Sawtooth -- CLI Configuration
+#
 
-services:
-
-  test-dynamic-membership:
-    image: sawtooth-pbft-test:${ISOLATION_ID}
-    build:
-      context: .
-      dockerfile: sawtooth-pbft-test.dockerfile
-    volumes:
-      - ..:/project/sawtooth-pbft
-      - /var/run/docker.sock:/var/run/docker.sock
-    working_dir: /project/sawtooth-pbft
-    command: /project/sawtooth-pbft/tests/test_dynamic_membership.sh
-    environment:
-      SAWTOOTH_PBFT: $SAWTOOTH_PBFT
-      ISOLATION_ID: $ISOLATION_ID
+# The REST API URL
+url = "http://andy-rest-api:8008"

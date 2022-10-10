@@ -8,7 +8,7 @@ volumes:
 services:
   validator-0:
     image: sawtooth-pbft-test:latest
-    container_name: validator-0
+    container_name: andy
     build:
       context: .
       dockerfile: sawtooth-pbft-test.dockerfile
@@ -17,7 +17,8 @@ services:
       - 8800
       - 5005
     volumes:
-      - ./settings:/settings
+      - ./nodeConfigFiles/Andy.toml:/etc/sawtooth/validator.toml
+      - ./nodeConfigFiles/Andy cli.toml:/etc/sawtooth/cli.toml
       - keys:/shared_keys
     working_dir: /root
     command: "bash -c \"\
@@ -38,24 +39,19 @@ services:
           config-genesis.batch config.batch && \
         mv /etc/sawtooth/keys/validator-* /shared_keys && \
         echo $$(cat /etc/sawtooth/keys/validator.pub); \
-        sawtooth-validator \
-            --endpoint tcp://validator-0:8800 \
-            --bind component:tcp://eth0:4004 \
-            --bind network:tcp://eth0:8800 \
-            --bind consensus:tcp://eth0:5050 \
-            --peering static \
-            --scheduler parallel \
-            --maximum-peer-connectivity 3 \
+        sawtooth-validator -vv \
     \""
 
     stop_signal: SIGKILL
   validator-1:
     image: sawtooth-pbft-test:latest
-    container_name: validator-1
+    container_name: ben
     build:
       context: .
       dockerfile: sawtooth-pbft-test.dockerfile
     volumes:
+      - ./nodeConfigFiles/Ben.toml:/etc/sawtooth/validator.toml
+      - ./nodeConfigFiles/Ben cli.toml:/etc/sawtooth/cli.toml
       - keys:/shared_keys
     expose:
       - 4004
@@ -64,24 +60,18 @@ services:
     command: "bash -c \"\
         while true; do if [ -e /shared_keys/validator-1.pub ]; then mv /shared_keys/validator-1.priv /etc/sawtooth/keys/validator.priv && mv /shared_keys/validator-1.pub /etc/sawtooth/keys/validator.pub; break; fi; sleep 0.5; done; \
         echo $$(cat /etc/sawtooth/keys/validator.pub); \
-        sawtooth-validator \
-            --endpoint tcp://validator-1:8800 \
-            --bind component:tcp://eth0:4004 \
-            --bind network:tcp://eth0:8800 \
-            --bind consensus:tcp://eth0:5050 \
-            --peering static \
-            --peers tcp://validator-0:8800
-            --scheduler parallel \
-            --maximum-peer-connectivity 3 \
+        sawtooth-validator -vv \
     \""
     stop_signal: SIGKILL
   validator-2:
     image: sawtooth-pbft-test:latest
-    container_name: validator-2
+    container_name: jack
     build:
       context: .
       dockerfile: sawtooth-pbft-test.dockerfile
     volumes:
+      - ./nodeConfigFiles/Jack.toml:/etc/sawtooth/validator.toml
+      - ./nodeConfigFiles/Jack cli.toml:/etc/sawtooth/cli.toml
       - keys:/shared_keys
     expose:
       - 4004
@@ -90,24 +80,18 @@ services:
     command: "bash -c \"\
         while true; do if [ -e /shared_keys/validator-2.pub ]; then mv /shared_keys/validator-2.priv /etc/sawtooth/keys/validator.priv && mv /shared_keys/validator-2.pub /etc/sawtooth/keys/validator.pub; break; fi; sleep 0.5; done; \
         echo $$(cat /etc/sawtooth/keys/validator.pub); \
-        sawtooth-validator \
-            --endpoint tcp://validator-2:8800 \
-            --bind component:tcp://eth0:4004 \
-            --bind network:tcp://eth0:8800 \
-            --bind consensus:tcp://eth0:5050 \
-            --peering static \
-            --peers tcp://validator-0:8800,tcp://validator-1:8800
-            --scheduler parallel \
-            --maximum-peer-connectivity 3 \
+        sawtooth-validator -vv \
     \""
     stop_signal: SIGKILL
   validator-3:
     image: sawtooth-pbft-test:latest
-    container_name: validator-3
+    container_name: tom
     build:
       context: .
       dockerfile: sawtooth-pbft-test.dockerfile
     volumes:
+      - ./nodeConfigFiles/Tom.toml:/etc/sawtooth/validator.toml
+      - ./nodeConfigFiles/Tom cli.toml:/etc/sawtooth/cli.toml
       - keys:/shared_keys
     expose:
       - 4004
@@ -116,118 +100,118 @@ services:
     command: "bash -c \"\
         while true; do if [ -e /shared_keys/validator-3.pub ]; then mv /shared_keys/validator-3.priv /etc/sawtooth/keys/validator.priv && mv /shared_keys/validator-3.pub /etc/sawtooth/keys/validator.pub; break; fi; sleep 0.5; done; \
         echo $$(cat /etc/sawtooth/keys/validator.pub); \
-        sawtooth-validator \
-            --endpoint tcp://validator-3:8800 \
-            --bind component:tcp://eth0:4004 \
-            --bind network:tcp://eth0:8800 \
-            --bind consensus:tcp://eth0:5050 \
-            --peering static \
-            --peers tcp://validator-0:8800,tcp://validator-1:8800,tcp://validator-2:8800
-            --scheduler parallel \
-            --maximum-peer-connectivity 3 \
+        sawtooth-validator -vv \
     \""
     stop_signal: SIGKILL
   pbft-0:
     image: sawtooth-pbft-engine-local:latest
-    container_name: sawtooth-pbft-engine-default-0
+    container_name: andy-pbft-engine
     build:
       context: .
-      dockerfile: ../Dockerfile
+      dockerfile: Dockerfile
     volumes:
-      - ..:/project/sawtooth-pbft
+      - ./:/project/sawtooth-pbft
       - cargo-registry:/root/.cargo/registry
       - cargo-git:/root/.cargo/git
     working_dir: /project/sawtooth-pbft/
-    command: ./target/debug/pbft-engine --connect tcp://validator-0:5050 -vv
+    command: ./target/debug/pbft-engine --connect tcp://andy:5050 -vv
     stop_signal: SIGKILL
   pbft-1:
     image: sawtooth-pbft-engine-local:latest
-    container_name: sawtooth-pbft-engine-default-1
+    container_name: ben-pbft-engine
     build:
       context: .
-      dockerfile: ../Dockerfile
+      dockerfile: Dockerfile
     volumes:
-      - ..:/project/sawtooth-pbft
+      - ./:/project/sawtooth-pbft
       - cargo-registry:/root/.cargo/registry
       - cargo-git:/root/.cargo/git
     working_dir: /project/sawtooth-pbft/
-    command: ./target/debug/pbft-engine --connect tcp://validator-1:5050 -vv
+    command: ./target/debug/pbft-engine --connect tcp://ben:5050 -vv
     stop_signal: SIGKILL
   pbft-2:
     image: sawtooth-pbft-engine-local:latest
-    container_name: sawtooth-pbft-engine-default-2
+    container_name: jack-pbft-engine
     build:
       context: .
-      dockerfile: ../Dockerfile
+      dockerfile: Dockerfile
     volumes:
-      - ..:/project/sawtooth-pbft
+      - ./:/project/sawtooth-pbft
       - cargo-registry:/root/.cargo/registry
       - cargo-git:/root/.cargo/git
     working_dir: /project/sawtooth-pbft/
-    command: ./target/debug/pbft-engine --connect tcp://validator-2:5050 -vv
+    command: ./target/debug/pbft-engine --connect tcp://jack:5050 -vv
     stop_signal: SIGKILL
   pbft-3:
     image: sawtooth-pbft-engine-local:latest
-    container_name: sawtooth-pbft-engine-default-3
+    container_name: tom-pbft-engine
     build:
       context: .
-      dockerfile: ../Dockerfile
+      dockerfile: Dockerfile
     volumes:
-      - ..:/project/sawtooth-pbft
+      - ./:/project/sawtooth-pbft
       - cargo-registry:/root/.cargo/registry
       - cargo-git:/root/.cargo/git
     working_dir: /project/sawtooth-pbft/
-    command: ./target/debug/pbft-engine --connect tcp://validator-3:5050 -vv
+    command: ./target/debug/pbft-engine --connect tcp://tom:5050 -vv
     stop_signal: SIGKILL
   rest-api-0:
     image: sawtooth-pbft-test:latest
-    container_name: rest-api-0
+    container_name: andy-rest-api
     build:
       context: .
       dockerfile: sawtooth-pbft-test.dockerfile
+    volumes:
+      - ./nodeConfigFiles/Andy rest_api.toml:/etc/sawtooth/rest_api.toml
     expose:
       - 4004
       - 8008
-    command: sawtooth-rest-api --connect tcp://validator-0:4004 --bind rest-api-0:8008
+    command: sawtooth-rest-api -v
     depends_on:
       - validator-0
     stop_signal: SIGKILL
   rest-api-1:
     image: sawtooth-pbft-test:latest
-    container_name: rest-api-1
+    container_name: ben-rest-api
     build:
       context: .
       dockerfile: sawtooth-pbft-test.dockerfile
+    volumes:
+      - ./nodeConfigFiles/Ben rest_api.toml:/etc/sawtooth/rest_api.toml
     expose:
       - 4004
       - 8008
-    command: sawtooth-rest-api --connect tcp://validator-1:4004 --bind rest-api-1:8008
+    command: sawtooth-rest-api -v
     stop_signal: SIGKILL
   rest-api-2:
     image: sawtooth-pbft-test:latest
-    container_name: rest-api-2
+    container_name: jack-rest-api
     build:
       context: .
       dockerfile: sawtooth-pbft-test.dockerfile
+    volumes:
+      - ./nodeConfigFiles/Jack rest_api.toml:/etc/sawtooth/rest_api.toml
     expose:
       - 4004
       - 8008
-    command: sawtooth-rest-api --connect tcp://validator-2:4004 --bind rest-api-2:8008
+    command: sawtooth-rest-api -v
     stop_signal: SIGKILL
   rest-api-3:
     image: sawtooth-pbft-test:latest
-    container_name: rest-api-3
+    container_name: tom-rest-api
+    volumes:
+      - ./nodeConfigFiles/Tom rest_api.toml:/etc/sawtooth/rest_api.toml
     build:
       context: .
       dockerfile: sawtooth-pbft-test.dockerfile
     expose:
       - 4004
       - 8008
-    command: sawtooth-rest-api --connect tcp://validator-3:4004 --bind rest-api-3:8008
+    command: sawtooth-rest-api -v
     stop_signal: SIGKILL
-  shell-0:
+  shell:
     image: hyperledger/sawtooth-all:1.0
-    container_name: shell-0
+    container_name: shell
     depends_on:
       - rest-api-0
     entrypoint: "bash -c \"\
@@ -237,41 +221,41 @@ services:
 
   settings-tp-0:
     image: sawtooth-pbft-test:latest
-    container_name: settings-tp-0
+    container_name: andy-settings-tp
     build:
       context: .
       dockerfile: sawtooth-pbft-test.dockerfile
     expose:
       - 4004
-    command: settings-tp -C tcp://validator-0:4004 -v
+    command: settings-tp -C tcp://andy:4004 -v
     stop_signal: SIGKILL
   settings-tp-1:
     image: sawtooth-pbft-test:latest
-    container_name: settings-tp-1
+    container_name: ben-settings-tp
     build:
       context: .
       dockerfile: sawtooth-pbft-test.dockerfile
     expose:
       - 4004
-    command: settings-tp -C tcp://validator-1:4004 -v
+    command: settings-tp -C tcp://ben:4004 -v
     stop_signal: SIGKILL
   settings-tp-2:
     image: sawtooth-pbft-test:latest
-    container_name: settings-tp-2
+    container_name: jack-settings-tp
     build:
       context: .
       dockerfile: sawtooth-pbft-test.dockerfile
     expose:
       - 4004
-    command: settings-tp -C tcp://validator-2:4004
+    command: settings-tp -C tcp://jack:4004
     stop_signal: SIGKILL
   settings-tp-3:
     image: sawtooth-pbft-test:latest
-    container_name: settings-tp-3
+    container_name: tom-settings-tp
     build:
       context: .
       dockerfile: sawtooth-pbft-test.dockerfile
     expose:
       - 4004
-    command: settings-tp -C tcp://validator-3:4004
+    command: settings-tp -C tcp://tom:4004
     stop_signal: SIGKILL

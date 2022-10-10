@@ -13,12 +13,7 @@
 # limitations under the License.
 # ------------------------------------------------------------------------------
 
-# docker build -f Dockerfile-installed-bionic -t sawtooth-pbft-engine .
-
-# -------------=== pbft build ===-------------
 FROM ubuntu:bionic as pbft-builder
-
-ENV VERSION=AUTO_STRICT
 
 RUN apt-get update \
  && apt-get install -y -q --allow-downgrades \
@@ -30,7 +25,6 @@ RUN apt-get update \
     libzmq3-dev \
     openssl \
     pkg-config \
-    python3 \
     unzip \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
@@ -48,17 +42,11 @@ COPY . /project/sawtooth-pbft
 
 WORKDIR /project/sawtooth-pbft
 
-RUN export VERSION=$(./bin/get_version) \
- && sed -i -e "0,/version.*$/ s/version.*$/version\ =\ \"${VERSION}\"/" Cargo.toml \
- && /root/.cargo/bin/cargo deb --deb-version $VERSION
+RUN  /root/.cargo/bin/cargo deb
 
 # -------------=== pbft docker build ===-------------
 FROM ubuntu:bionic
 
 COPY --from=pbft-builder /project/sawtooth-pbft/target/debian/sawtooth*.deb /tmp
-
-RUN apt-get update \
- && dpkg -i /tmp/sawtooth*.deb || true \
- && apt-get -f -y install
 
 CMD pbft-engine

@@ -1,4 +1,5 @@
-# Copyright 2018 Cargill Incorporated
+#
+# Copyright 2017 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,27 +12,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# ------------------------------------------------------------------------------
 
-version: '3.6'
-volumes:
-  cargo-registry:
-  cargo-git:
-  cargo-target:
+#
+# Sawtooth -- CLI Configuration
+#
 
-services:
-
-  pbft-engine:
-    build:
-      context: .
-      dockerfile: Dockerfile-installed-${DISTRO}
-      args:
-        - http_proxy
-        - https_proxy
-        - no_proxy
-    image: sawtooth-pbft-engine:${ISOLATION_ID}
-    volumes:
-      - .:/project/sawtooth-pbft
-      - cargo-target:/project/sawtooth-pbft/target
-      - cargo-registry:/root/.cargo/registry
-      - cargo-git:/root/.cargo/git
-    container_name: sawtooth-pbft
+# The REST API URL
+url = "http://tom-rest-api:8008"

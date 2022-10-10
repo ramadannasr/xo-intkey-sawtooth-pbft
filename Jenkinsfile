@@ -27,7 +27,7 @@ environment {
     }
 
     stages {
-        stage('Build pbft engine') {
+        stage('Build xo-intkey-sawtooth-pbft') {
             steps {
                 sh 'docker-compose -f docker/compose/pbft-build.yaml up'
             }
@@ -38,24 +38,16 @@ environment {
             }
         }
 
-        stage('Run unit tests') {
+        stage('Run Unit & Integration Tests') {
             steps {
                 sh 'docker-compose run --rm sawtooth-pbft cargo test'
             }
         }
 
 
-        stage('Run liveness tests') {
+        stage('Run Liveness Tests') {
             steps {
                 sh './bin/run_docker_test tests/test_liveness.yaml'
-            }
-        }
-
-
-        stage("Archive Build artifacts") {
-            steps {
-                sh 'docker-compose -f docker-compose-installed.yaml build'
-                sh 'docker run --rm -v $(pwd)/build:/build sawtooth-pbft-engine:${ISOLATION_ID} bash -c "cp /tmp/sawtooth-pbft-engine*.deb /build && chown -R ${JENKINS_UID} /build"'
             }
         }
     }
@@ -63,9 +55,7 @@ environment {
     post {
         always {
             sh 'docker-compose down'
-        }
-        success {
-            archiveArtifacts 'build/*.deb'
+            sh 'docker ps -aq | xargs docker stop | xargs docker rm'
         }
         aborted {
             error "Aborted, exiting now"
